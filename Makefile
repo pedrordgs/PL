@@ -1,13 +1,15 @@
+GLIBFLAG = `pkg-config --cflags --libs glib-2.0`
+
 install: filtro varchange
 
 filtro:
 	flex filtro.l
-	gcc lex.yy.c -o mktemplate
+	gcc $(GLIBFLAG) lex.yy.c -o mktemplate
 	rm lex.yy.c
 
 varchange:
 	flex varchange.l
-	gcc lex.yy.c -o varchange
+	gcc $(GLIBFLAG) lex.yy.c -o varchange
 	rm lex.yy.c
 
 clean:
