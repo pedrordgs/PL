@@ -1,6 +1,6 @@
 %option noyywrap yylineno
 
-%x META TREE
+%x META TREE PROF
 %{
 #include <stdio.h>
 #include <string.h>
@@ -16,8 +16,7 @@ int prof=0,nprof=0;
 char *name,*author,*email,*file,*pwd;
 
 GNode* addToTree (char* nome, int file, GNode* parent);
-int mkdir (char* path);
-int mkfile (char* path);
+void makeTree();
 int writef (char* s, char* f);
 %}
 
@@ -31,9 +30,7 @@ int writef (char* s, char* f);
 .|\n                                {;}
 }
 <TREE>{
-^===[  ][^\n]+                      {/*file=strdup(yytext+4);*/BEGIN 0;}
-^-+[  ]                             {printf(yytext);nprof=strlen(yytext)-1;}
-[a-zA-Z0-9._ ]+\/$                  {
+[^\n\\\*\?\<\>\|\/]+\/$             {
                                         while(nprof!=prof){
                                         parent=parent->parent;
                                         prof--;
@@ -41,19 +38,26 @@ int writef (char* s, char* f);
                                         parent=addToTree(yytext,0,parent);
                                         prof++;
                                         nprof=0;
+                                        BEGIN PROF;
                                     }
-[a-zA-Z0-9._ ]+                     {
+[^\n\\\*\?\<\>\|\/]+                {
                                         while(nprof!=prof){
                                         parent=parent->parent;
                                         prof--;
                                         }
                                         addToTree(yytext,1,parent);
                                         nprof=0;
+                                        BEGIN PROF;
                                     }
 .|\n                                {;}
 }
+<PROF>{
+^===[  ][^\n]+                      {makeTree();file=strdup(yytext+4);BEGIN 0;}
+^-+[  ]                             {nprof=strlen(yytext)-1;BEGIN TREE;}
+.|\n                                {;}
+}
 ^===[ ][^\n]+                       {file=strdup(yytext+4);}
-^[^\n]+                             {;/*{writef(yytext,file);}*/}
+^[^\n]+                             {writef(yytext,file);}
 .|\n                                {;}
 
 %%
@@ -97,6 +101,37 @@ void transformTree (GNode* dir,char* path){
     }
 }
 
+void makeTree(){
+    char pwd [64];
+    getcwd(pwd,sizeof(pwd));
+    strcat(pwd,"/");
+    transformTree(dirs,pwd);
+}
+
+int getFilePath (GNode* dir,char* f,char* path){
+    if (dir!=NULL){
+        GNode* child = g_node_first_child(dir);
+        while(child){
+            Node* dados = child->data;
+            if (dados->file){
+                if (strcmp(dados->descricao,f)==0){
+                    strcat(path,f);
+                    return 1;
+                }
+            }
+            else{
+                strcat(path,dados->descricao);
+                if (getFilePath(child,f,path)==1) return 1;
+                else{
+                    int nc = strlen(path)-strlen(dados->descricao);
+                    path[nc]='\0';
+                }
+            }
+            child=child->next;
+        }
+    }
+    return 0;
+}
 
 /* gboolean tfunc (GNode* node, gpointer data){ */
 /*     GNode* pai = node->parent; */
@@ -118,10 +153,16 @@ void transformTree (GNode* dir,char* path){
 /* } */
 
 
+
 int writef (char* s, char* f){
-    char i [sizeof(char)*strlen(s)+10+sizeof(char)*strlen(f)];
-    sprintf(i,"echo %s >> %s",s,f);
-    system(i);
+    char path [1024];
+    getcwd(path,sizeof(path));
+    strcat(path,"/");
+    if (getFilePath(dirs,f,path)==1){
+        char i [sizeof(char)*strlen(s)+10+sizeof(char)*strlen(path)];
+        sprintf(i,"echo %s >> %s",s,path);
+        system(i);
+    }
     return 0;
 }
 
@@ -130,10 +171,5 @@ int main(int argc, char** argv){
     initializeTree();
     yylex();
     /* navigateTree(); */
-    transformTree(dirs,"~/miei/3ano/pl/trabalho/");
     return 0;
 }
-
-
-
-
