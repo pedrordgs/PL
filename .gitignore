@@ -3,4 +3,4 @@ lex.*
 *.log
 *.aux
 *.out
-
+*.tex

@@ -1,21 +1,27 @@
 %option noyywrap yylineno prefix="vars"
 
+%x META
 %{
   #include <stdio.h>
   #include <string.h>
   extern char* name;
-  char *author,*email,*mode,*pwd;
+  char *author,*email,*pwd;
 %}
 
 %%
 
-\{%name%\} {printf(name);}
-\{%author%\} {printf(author);}
-\{%email%\} {printf(email);}
-#[^\n]+ {if (strcmp(mode,"meta")!=0) ECHO;}
-^===[ ](meta|tree) {ECHO;mode=strdup(yytext+4);}
-^email:[  ][^\n]+ {ECHO;if (strcmp(mode,"meta")==0) email=strdup(yytext+7);}
-^author:[  ][^\n]+ {ECHO;if (strcmp(mode,"meta")==0) author=strdup(yytext+8);}
+\{%name%\}                  {printf(name);}
+\{%author%\}                {printf(author);}
+\{%email%\}                 {printf(email);}
+^===[ ]meta                 {ECHO;BEGIN META;}
+<META>{
+#[^\n]+                     {;}    // comentario nos metadados
+^email:[  ][^\n]+           {ECHO;email=strdup(yytext+7);}
+^author:[  ][^\n]+          {ECHO;author=strdup(yytext+8);}
+^===[ ]tree                 {ECHO;BEGIN 0;}
+}
+
+
 
 %%
 

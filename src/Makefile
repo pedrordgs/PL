@@ -2,8 +2,6 @@ CFLAGS=$(shell pkg-config --cflags glib-2.0)
 LFLAGS=$(shell pkg-config --libs glib-2.0)
 
 template: lex.vars.c lex.tmpl.c
-	# gcc $(CFLAGS) lex.tmpl.c -o filtro $(LFLAGS)
-	# gcc $(CFLAGS) lex.vars.c -o vars $(LFLAGS)
 	gcc -o mkfromtemplate $(CFLAGS) template.c lex.tmpl.c lex.vars.c $(LFLAGS)
 
 lex.tmpl.c: filtro.fl

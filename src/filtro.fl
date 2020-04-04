@@ -140,25 +140,6 @@ int getFilePath (GNode* dir,char* f,char* path){
     return 0;
 }
 
-/* gboolean tfunc (GNode* node, gpointer data){ */
-/*     GNode* pai = node->parent; */
-/*     if (pai!=NULL){ */
-/*         Node* dados = node->data; */
-/*         printf("Nome: %s   %d   ",dados->descricao,dados->file); */
-/*         Node* dados_pai; */
-/*         dados_pai = pai->data; */
-/*         if (dados_pai!=NULL) */
-/*             printf("Pai: %s\n",dados_pai->descricao); */
-/*         else */
-/*             printf("Pai: Root\n"); */
-/*     } */
-/*     return FALSE; */
-/* } */
-
-/* void navigateTree (){ */
-/*     g_node_traverse(dirs,G_LEVEL_ORDER,G_TRAVERSE_ALL,-1,tfunc,NULL); */
-/* } */
-
 
 
 int writef (char* s, char* f){
@@ -169,9 +150,6 @@ int writef (char* s, char* f){
         FILE *f = fopen(path,"a");
         fprintf(f,"%s\n",s);
         fclose(f);
-        /* char i [sizeof(char)*strlen(s)+10+sizeof(char)*strlen(path)]; */
-        /* sprintf(i,"echo %s >> %s",s,path); */
-        /* system(i); */
     }
     return 0;
 }
