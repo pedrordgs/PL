@@ -1,0 +1,6 @@
+*.toc
+lex.*
+*.log
+*.aux
+*.out
+

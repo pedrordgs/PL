@@ -1,9 +1,10 @@
-%option noyywrap yylineno
+%option noyywrap yylineno prefix="vars"
 
 %{
   #include <stdio.h>
   #include <string.h>
-  char *name,*author,*email,*mode,*pwd;
+  extern char* name;
+  char *author,*email,*mode,*pwd;
 %}
 
 %%
@@ -18,8 +19,3 @@
 
 %%
 
-int main(int argc, char** argv){
-  name = argv[1];
-  yylex();
-  return 0;
-}

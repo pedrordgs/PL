@@ -1,4 +1,4 @@
-%option noyywrap yylineno
+%option noyywrap yylineno prefix="tmpl"
 
 %x META TREE PROF
 %{
@@ -13,10 +13,13 @@ typedef struct node{
 
 GNode *dirs,*parent;
 int prof=0,nprof=0;
-char *name,*author,*email,*file,*pwd;
+extern char* name;
+char *author,*email,*file,*pwd;
 
-GNode* addToTree (char* nome, int file, GNode* parent);
+void insertFile(char* nome);
+void insertDir(char* nome);
 void makeTree();
+void initializeTree();
 int writef (char* s, char* f);
 %}
 
@@ -26,29 +29,12 @@ int writef (char* s, char* f);
 <META>{
 ^email:[  ][^\n]+                   {email=strdup(yytext+7);}
 ^author:[  ][^\n]+                  {author=strdup(yytext+8);}
-^===[  ]tree                        {BEGIN TREE;}
+^===[  ]tree                        {initializeTree();BEGIN TREE;}
 .|\n                                {;}
 }
 <TREE>{
-[^\n\\\*\?\<\>\|\/]+\/$             {
-                                        while(nprof!=prof){
-                                        parent=parent->parent;
-                                        prof--;
-                                        }
-                                        parent=addToTree(yytext,0,parent);
-                                        prof++;
-                                        nprof=0;
-                                        BEGIN PROF;
-                                    }
-[^\n\\\*\?\<\>\|\/]+                {
-                                        while(nprof!=prof){
-                                        parent=parent->parent;
-                                        prof--;
-                                        }
-                                        addToTree(yytext,1,parent);
-                                        nprof=0;
-                                        BEGIN PROF;
-                                    }
+[^\n\\\*\?\<\>\|\/]+\/$             {insertDir(yytext);BEGIN PROF;}
+[^\n\\\*\?\<\>\|\/]+                {insertFile(yytext);BEGIN PROF;}
 .|\n                                {;}
 }
 <PROF>{
@@ -78,6 +64,25 @@ GNode* addToTree(char* nome, int file, GNode* parent){
     return node;
 }
 
+void insertDir(char* nome){
+    while(nprof!=prof){
+        parent=parent->parent;
+        prof--;
+    }
+    parent=addToTree(nome,0,parent);
+    prof++;
+    nprof=0;
+}
+
+void insertFile(char* nome){
+    while(nprof!=prof){
+        parent=parent->parent;
+        prof--;
+    }
+    addToTree(nome,1,parent);
+    nprof=0;
+}
+
 void initializeTree(){
     dirs = g_node_new(NULL);
 }
@@ -101,12 +106,14 @@ void transformTree (GNode* dir,char* path){
     }
 }
 
+
 void makeTree(){
     char pwd [64];
     getcwd(pwd,sizeof(pwd));
     strcat(pwd,"/");
     transformTree(dirs,pwd);
 }
+
 
 int getFilePath (GNode* dir,char* f,char* path){
     if (dir!=NULL){
@@ -159,17 +166,12 @@ int writef (char* s, char* f){
     getcwd(path,sizeof(path));
     strcat(path,"/");
     if (getFilePath(dirs,f,path)==1){
-        char i [sizeof(char)*strlen(s)+10+sizeof(char)*strlen(path)];
-        sprintf(i,"echo %s >> %s",s,path);
-        system(i);
+        FILE *f = fopen(path,"a");
+        fprintf(f,"%s\n",s);
+        fclose(f);
+        /* char i [sizeof(char)*strlen(s)+10+sizeof(char)*strlen(path)]; */
+        /* sprintf(i,"echo %s >> %s",s,path); */
+        /* system(i); */
     }
-    return 0;
-}
-
-int main(int argc, char** argv){
-    name = argv[1];
-    initializeTree();
-    yylex();
-    /* navigateTree(); */
     return 0;
 }

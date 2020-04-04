@@ -1,5 +1,0 @@
-#!/bin/bash
-
-make
-./varchange $1 < $2 > varchanged
-./mktemplate $1 < varchanged
