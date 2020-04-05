@@ -84,7 +84,6 @@ void initializeTree(){
     dirs = g_node_new(NULL);
 }
 
-
 void transformTree (GNode* dir,char* path){
     if (dir!=NULL){
         GNode* child = g_node_first_child(dir);
@@ -111,7 +110,6 @@ void makeTree(){
     transformTree(dirs,pwd);
 }
 
-
 int getFilePath (GNode* dir,char* f,char* path){
     if (dir!=NULL){
         GNode* child = g_node_first_child(dir);
@@ -136,8 +134,6 @@ int getFilePath (GNode* dir,char* f,char* path){
     }
     return 0;
 }
-
-
 
 int writef (char* s, char* f){
     char path [1024];

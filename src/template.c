@@ -45,6 +45,6 @@ int main (int argc, char* argv[]){
   name = strdup(argv[1]);
   changeVariables(temp);
   makeTemplate();
-  /* unlink("pipe"); */
+  unlink("pipe");
   return 0;
 }
