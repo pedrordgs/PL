@@ -1,4 +1,4 @@
 #!/bin/bash
 
 make
-sudo cp mkfromtemplate /usr/bin
+sudo cp mkfromtemplate /usr/local/bin

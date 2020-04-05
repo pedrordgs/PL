@@ -1,6 +1,6 @@
 %option noyywrap yylineno prefix="tmpl"
 
-%x META TREE PROF
+%x META TREE PROF FILES
 %{
 #include <stdio.h>
 #include <string.h>
@@ -13,8 +13,7 @@ typedef struct node{
 
 GNode *dirs,*parent;
 int prof=0,nprof=0;
-extern char* name;
-char *author,*email,*file,*pwd;
+char *file,*pwd;
 
 void insertFile(char* nome);
 void insertDir(char* nome);
@@ -25,25 +24,23 @@ int writef (char* s, char* f);
 
 %%
 
-^===[  ]meta                        {BEGIN META;}
-<META>{
-^email:[  ][^\n]+                   {email=strdup(yytext+7);}
-^author:[  ][^\n]+                  {author=strdup(yytext+8);}
 ^===[  ]tree                        {initializeTree();BEGIN TREE;}
-.|\n                                {;}
-}
 <TREE>{
 [^\n\\\*\?\<\>\|\/]+\/$             {insertDir(yytext);BEGIN PROF;}
 [^\n\\\*\?\<\>\|\/]+                {insertFile(yytext);BEGIN PROF;}
 .|\n                                {;}
 }
 <PROF>{
-^===[  ][^\n]+                      {makeTree();file=strdup(yytext+4);BEGIN 0;}
+^===[  ][^\n]+                      {makeTree();file=strdup(yytext+4);BEGIN FILES;}
 ^-+[  ]                             {nprof=strlen(yytext)-1;BEGIN TREE;}
 .|\n                                {;}
 }
+<FILES>{
 ^===[ ][^\n]+                       {file=strdup(yytext+4);}
-^[^\n]+                             {writef(yytext,file);}
+^[^\n]*                             {writef(yytext,file);}
+^\n                                 {writef("",file);}
+.|\n                                {;}
+}
 .|\n                                {;}
 
 %%
